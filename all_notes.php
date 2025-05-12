@@ -52,6 +52,14 @@ if ($user && $user['is_activated'] == 0) {
             border-top-right-radius: 16px;
             text-align: center;
         }
+        .rosshairpin {
+            background-color: #dcedc1;
+            color: #33691e;
+            font-size: 24px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            text-align: center;
+        }
         .btn-secondary {
             background-color: #81c784;
             border: none;
@@ -65,10 +73,7 @@ if ($user && $user['is_activated'] == 0) {
             background-color: #66bb6a;
         }
         .note-content {
-            max-height: 20em;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 20px;
         }
 
         .list-group-item {
@@ -99,6 +104,30 @@ if ($user && $user['is_activated'] == 0) {
         .bg-pastel-4 { background-color: #f8f1dc !important; }
         .bg-pastel-5 { background-color: #e6d8f8 !important; }
         .bg-pastel-6 { background-color: #f8dcd8 !important; }
+
+        /* Kiểu dáng cho modal */
+        .modal-content {
+            border: 4px solid #a8e6cf;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            background-color: #dcedc1;
+            color: #33691e;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .modal-title {
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        .modal-body {
+            font-size: 16px;
+            white-space: pre-wrap; /* Cho phép xuống dòng */
+        }
+        .modal-footer {
+            border-top: none;
+        }
     </style>
 </head>
 <body>
@@ -166,13 +195,31 @@ if ($user && $user['is_activated'] == 0) {
                                     // Chọn ngẫu nhiên một màu từ danh sách
                                     $randomColor = $colors[array_rand($colors)];
                                 ?>
-                                <li class="list-group-item mt-2 <?php echo $randomColor; ?>">
+                                <li class="list-group-item mt-2 <?php echo $randomColor; ?>" data-toggle="modal" data-target="#noteModal" data-title="<?php echo htmlspecialchars($noteTitle); ?>" data-content="<?php echo htmlspecialchars($noteContent); ?>" data-time="<?php echo $formattedDateTime; ?>">
                                     <h3 style="text-transform:uppercase;"><b><?php echo htmlspecialchars($noteTitle) ?></b></h3>
-                                    <p><?php echo htmlspecialchars($noteContent) ?></p>
+                                    <p class="note-content"><?php echo htmlspecialchars($noteContent) ?></p>
                                     <small class="block text-muted text-info">Created: <i class="fa fa-clock-o text-info"></i> <?php echo $formattedDateTime ?></small>
                                 </li>
                                 <?php } ?>
                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal hiển thị ghi chú -->
+            <div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-labelledby="noteModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="noteModalTitle"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="noteModalContent"></div>
+                        <div class="modal-footer">
+                            <small class="text-muted text-info" id="noteModalTime"></small>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
@@ -182,5 +229,21 @@ if ($user && $user['is_activated'] == 0) {
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+        // Xử lý sự kiện nhấp vào ghi chú để hiển thị modal
+        $(document).ready(function() {
+            $('.list-group-item').on('click', function() {
+                var title = $(this).data('title');
+                var content = $(this).data('content');
+                var time = $(this).data('time');
+                
+                $('#noteModalTitle').text(title);
+                $('#noteModalContent').text(content);
+                $('#noteModalTime').html('Created: <i class="fa fa-clock-o text-info"></i> ' + time);
+                
+                $('#noteModal').modal('show');
+            });
+        });
+    </script>
 </body>
 </html>
