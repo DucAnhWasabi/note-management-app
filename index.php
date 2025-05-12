@@ -52,6 +52,14 @@ if ($user && $user['is_activated'] == 0) {
             border-top-right-radius: 16px;
             text-align: center;
         }
+        .rosshairpin {
+            background-color: #dcedc1;
+            color: #33691e;
+            font-size: 24px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            text-align: center;
+        }
         .card-body input[type="text"] {
             background-color: #e0f7fa;
             border: 2px dashed #a8e6cf;
@@ -115,6 +123,30 @@ if ($user && $user['is_activated'] == 0) {
         .bg-pastel-4 { background-color: #f8f1dc !important; }
         .bg-pastel-5 { background-color: #e6d8f8 !important; }
         .bg-pastel-6 { background-color: #f8dcd8 !important; }
+
+        /* Kiểu dáng cho modal */
+        .modal-content {
+            border: 4px solid #a8e6cf;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            background-color: #dcedc1;
+            color: #33691e;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .modal-title {
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        .modal-body {
+            font-size: 16px;
+            white-space: pre-wrap; /* Cho phép xuống dòng */
+        }
+        .modal-footer {
+            border-top: none;
+        }
     </style>
 </head>
 <body>
@@ -183,9 +215,9 @@ if ($user && $user['is_activated'] == 0) {
                                     // Chọn ngẫu nhiên một màu từ danh sách
                                     $randomColor = $colors[array_rand($colors)];
                                 ?>
-                                <li class="list-group-item mt-2 <?php echo $randomColor; ?>">
+                                <li class="list-group-item mt-2 <?php echo $randomColor; ?>" data-toggle="modal" data-target="#noteModal" data-title="<?php echo htmlspecialchars($noteTitle); ?>" data-content="<?php echo htmlspecialchars($noteContent); ?>" data-time="<?php echo $formattedDateTime; ?>">
                                     <div class="btn-group float-right">
-                                        <a href="update_note.php?edit=<?php echo $noteID ?>"><button type="button" class="btn btn-sm btn-light" title="Show"><i class="fa fa-pencil"></i></button></a>
+                                        <a href="endpoint/update_note.php?edit=<?php echo $noteID ?>"><button type="button" class="btn btn-sm btn-light" title="Show"><i class="fa fa-pencil"></i></button></a>
                                         <button onclick="delete_note('<?php echo $noteID ?>')" type="button" class="btn btn-sm btn-light" title="Remove"><i class="fa fa-trash"></i></button>
                                     </div>
                                     <h3 style="text-transform:uppercase;"><b><?php echo htmlspecialchars($noteTitle) ?></b></h3>
@@ -199,7 +231,7 @@ if ($user && $user['is_activated'] == 0) {
                 </div>
             </div>
             <!-- Add Note - chiếm 2/3 -->
-            <div class="col-md-8 border-right">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
                         🐸 Add Your Cute Note 🥑
@@ -220,17 +252,55 @@ if ($user && $user['is_activated'] == 0) {
                     </div>
                 </div>
             </div>
+            <!-- Modal hiển thị ghi chú -->
+            <div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-labelledby="noteModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="noteModalTitle"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="noteModalContent"></div>
+                        <div class="modal-footer">
+                            <small class="text-muted text-info" id="noteModalTime"></small>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <script>
-        function delete_note(id) {
-            if (confirm("Do you confirm to delete this note?")) {
-                window.location = "delete_note.php?delete=" + id;
-            }
-        }
-    </script>
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+        function delete_note(id) {
+            if (confirm("Do you confirm to delete this note?")) {
+                window.location = "endpoint/delete_note.php?delete=" + id;
+            }
+        }
+
+        // Xử lý sự kiện nhấp vào ghi chú để hiển thị modal
+        $(document).ready(function() {
+            $('.list-group-item').on('click', function(e) {
+                // Ngăn modal hiển thị nếu nhấp vào nút chỉnh sửa hoặc xóa
+                if ($(e.target).closest('.btn-group').length) {
+                    return;
+                }
+                var title = $(this).data('title');
+                var content = $(this).data('content');
+                var time = $(this).data('time');
+                
+                $('#noteModalTitle').text(title);
+                $('#noteModalContent').text(content);
+                $('#noteModalTime').html('Created: <i class="fa fa-clock-o text-info"></i> ' + time);
+                
+                $('#noteModal').modal('show');
+            });
+        });
+    </script>
 </body>
 </html>
