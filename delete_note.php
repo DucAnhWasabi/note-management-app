@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login_register.php');
+    header('Location: login_register.php');
     exit();
 }
 include('connection.php');
@@ -23,18 +23,18 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['delete'])) {
         $stmt->bindParam(':user_id', $userId);
 
         if ($stmt->execute()) {
-            header("Location: http://localhost/take-note-app/");
+            header("Location: index.php");
             exit();
         } else {
-            header("Location: http://localhost/take-note-app/");
+            header("Location: index.php");
             exit();
         }
     } else {
-        header("Location: http://localhost/take-note-app/");
+        header("Location: index.php");
         exit();
     }
 } else {
-    header("Location: http://localhost/take-note-app/");
+    header("Location: index.php");
     exit();
 }
 ?>
