@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login_register.php');
+    header('Location: login_register.php');
     exit();
 }
 include('connection.php');
@@ -27,18 +27,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':user_id', $userId);
 
         if ($stmt->execute()) {
-            header("Location: http://localhost/take-note-app/");
+            header("Location: index.php");
             exit();
         } else {
-            header("Location: update_note.php?edit=$noteID&error=1");
+            header("Location: note_edit.php?edit=$noteID&error=1");
             exit();
         }
     } else {
-        header("Location: http://localhost/take-note-app/");
+        header("Location: index.php");
         exit();
     }
 } else {
-    header("Location: http://localhost/take-note-app/");
+    header("Location: index.php");
     exit();
 }
 ?>
