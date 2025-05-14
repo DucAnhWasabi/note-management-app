@@ -6,6 +6,21 @@ if (!isset($_SESSION['user_id'])) {
 }
 include('connection.php');
 
+// Lấy tùy chỉnh của người dùng
+$user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT * FROM user_preferences WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$preferences = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Nếu không có tùy chỉnh, sử dụng giá trị mặc định
+if (!$preferences) {
+    $preferences = [
+        'font_size' => 'medium',
+        'note_color' => 'bg-pastel-1',
+        'theme' => 'light'
+    ];
+}
+
 // Kiểm tra trạng thái kích hoạt
 $is_activated = true;
 $stmt = $conn->prepare("SELECT is_activated FROM users WHERE user_id = ?");
@@ -59,6 +74,9 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         body {
             font-family: 'Patrick Hand', cursive;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#2c2c2c' : '#f4f6f9'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .main-panel, .card {
@@ -68,47 +86,75 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .card {
-            background-color: #ffffff;
-            border: 4px solid #a8e6cf !important;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#3a3a3a' : '#ffffff'; ?>;
+            border: 4px solid <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#a8e6cf'; ?> !important;
             border-radius: 20px !important;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,<?php echo $preferences['theme'] == 'dark' ? '0.3' : '0.1'; ?>);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+
         .card-header {
-            background-color: #dcedc1;
-            color: #33691e;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#4a4a4a' : '#dcedc1'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf' : '#33691e'; ?>;
             font-size: 24px;
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             text-align: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .btn-secondary, .btn-toggle {
-            background-color: #81c784;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#66bb6a' : '#81c784'; ?>;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             padding: 10px 20px;
-            transition: 0.3s;
+            color: white;
+            transition: background-color 0.3s ease;
         }
 
         .btn-secondary:hover, .btn-toggle:hover {
-            background-color: #66bb6a;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
         }
+
         .btn-light {
-            background-color: #e2e6ea;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#666' : '#e2e6ea'; ?>;
             border-radius: 12px;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .btn-light:hover {
-            background-color: #d6d8db;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#777' : '#d6d8db'; ?>;
         }
+
+        /* Áp dụng kích thước phông chữ */
+        .note-item h3 {
+            color: black;
+            font-size: <?php echo $preferences['font_size'] == 'small' ? '16px' : ($preferences['font_size'] == 'large' ? '24px' : '20px'); ?>;
+            transition: color 0.3s ease;
+        }
+
         .note-content {
-            font-size: 16px;
+            color: black;
+            font-size: <?php echo $preferences['font_size'] == 'small' ? '12px' : ($preferences['font_size'] == 'large' ? '18px' : '16px'); ?>;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             line-clamp: 3;
             -webkit-box-orient: vertical;
+            transition: color 0.3s ease;
+        }
+
+        .note-item .text-muted {
+            color: <?php echo $preferences['theme'] == 'dark' ? 'black !important' : '#6c757d !important'; ?>;
+            transition: color 0.3s ease;
+        }
+
+        .note-item .text-info {
+            color: <?php echo $preferences['theme'] == 'dark' ? 'black !important' : '#17a2b8 !important'; ?>;
+            transition: color 0.3s ease;
         }
 
         /* Grid View */
@@ -122,8 +168,8 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .note-item {
             transition: all 0.2s ease;
             border-radius: 12px;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#ddd'; ?>;
+            box-shadow: 0 2px 5px rgba(0,0,0,<?php echo $preferences['theme'] == 'dark' ? '0.3' : '0.05'; ?>);
             padding: 15px;
             cursor: pointer;
         }
@@ -155,41 +201,61 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         /* Modal Styling */
         .modal-content {
-            border: 4px solid #a8e6cf;
+            border: 4px solid <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#a8e6cf'; ?>;
             border-radius: 20px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,<?php echo $preferences['theme'] == 'dark' ? '0.3' : '0.1'; ?>);
+            transition: border-color 0.3s ease;
         }
+
         .modal-header {
-            background-color: #dcedc1;
-            color: #33691e;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#4a4a4a' : '#dcedc1'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf' : '#33691e'; ?>;
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .modal-title {
             font-size: 24px;
             text-transform: uppercase;
         }
+
         .modal-body {
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#3a3a3a' : '#ffffff'; ?>;
             font-size: 16px;
             white-space: pre-wrap;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .modal-footer {
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#3a3a3a' : '#ffffff'; ?>;
             border-top: none;
+            transition: background-color 0.3s ease;
         }
 
         .custom-navbar {
-            background-color: #a8e6cf;
-            background: linear-gradient(to right, #a8e6cf, #dcedc1);
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#444444' : '#a8e6cf'; ?>;
+            background: <?php echo $preferences['theme'] == 'dark' ? 'linear-gradient(to right, #444444, #555555)' : 'linear-gradient(to right, #a8e6cf, #dcedc1)'; ?>;
             border-radius: 122px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.155);
+            transition: background 0.3s ease;
         }
+
         .navbar-brand {
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            text-shadow: <?php echo $preferences['theme'] == 'dark' ? '1px 1px 2px rgba(0,0,0,0.5)' : '1px 1px 2px rgba(0,0,0,0.2)'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf !important' : '#2e7d32 !important'; ?>;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link {
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf !important' : '#33691e !important'; ?>;
+            transition: color 0.3s ease;
         }
 
         /* Navbar Create Note Button */
         .nav-item .btn-create-note {
-            background-color: #81c784;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#66bb6a' : '#81c784'; ?>;
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -199,43 +265,52 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .nav-item .btn-create-note:hover {
-            background-color: #66bb6a;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
         }
 
         /* Modal Form Styling */
         .modal-body input[type="text"] {
-            background-color: #e0f7fa;
-            border: 2px dashed #a8e6cf;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#e0f7fa'; ?>;
+            border: 2px dashed <?php echo $preferences['theme'] == 'dark' ? '#777777' : '#a8e6cf'; ?>;
             border-radius: 10px;
             font-size: 18px;
             padding: 12px;
             width: 100%;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
 
         .modal-body input[type="text"]:focus {
-            border-color: #66bb6a;
-            box-shadow: 0 0 5px rgba(102, 187, 106, 0.5);
+            border-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
+            box-shadow: 0 0 5px rgba(<?php echo $preferences['theme'] == 'dark' ? '136, 204, 136' : '102, 187, 106'; ?>, 0.5);
             outline: none;
         }
 
         .modal-footer .btn-primary {
-            background-color: #81c784;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#66bb6a' : '#81c784'; ?>;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             padding: 10px 20px;
+            color: white;
             transition: background-color 0.3s ease;
         }
 
         .modal-footer .btn-primary:hover {
-            background-color: #66bb6a;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
+        }
+
+        /* Alert Styling */
+        .alert-warning {
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#665522' : '#ffeeba'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#ffeeba' : '#856404'; ?>;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar shadow-sm rounded mx-3 my-3 px-4">
-        <a class="navbar-brand font-weight-bold" href="#" style="font-size: 28px; color: #2e7d32;">
+        <a class="navbar-brand font-weight-bold" href="#" style="font-size: 28px;">
             🍀 Take-Note App
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -251,11 +326,11 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </li>
                 <li class="nav-item dropdown ml-2">
                     <a class="nav-link dropdown-toggle font-weight-bold" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false" style="color: #33691e;">
+                    aria-haspopup="true" aria-expanded="false">
                         <?php echo htmlspecialchars($_SESSION['display_name']); ?>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">View Account</a>
+                        <a class="dropdown-item" href="user_preferences.php">Preferences</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="logout.php">Log Out</a>
                     </div>
@@ -309,7 +384,6 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="card-body">
                         <div class="notes-grid" id="notesContainer">
                             <?php
-                            $colors = ['bg-pastel-1', 'bg-pastel-2', 'bg-pastel-3', 'bg-pastel-4', 'bg-pastel-5', 'bg-pastel-6'];
                             $stmt = $conn->prepare("SELECT * FROM `tbl_notes` WHERE user_id = ?");
                             $stmt->execute([$_SESSION['user_id']]);
                             $result = $stmt->fetchAll();
@@ -319,9 +393,8 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $noteContent = $row['note'];
                                 $noteDateTime = $row['date_time'];
                                 $formattedDateTime = date('F j, Y H:i A', strtotime($noteDateTime));
-                                $randomColor = $colors[array_rand($colors)];
                             ?>
-                            <div class="note-item <?php echo $randomColor; ?>" data-toggle="modal" data-target="#noteModal" data-title="<?php echo htmlspecialchars($noteTitle); ?>" data-content="<?php echo htmlspecialchars($noteContent); ?>" data-time="<?php echo $formattedDateTime; ?>">
+                            <div class="note-item <?php echo $preferences['note_color']; ?>" data-toggle="modal" data-target="#noteModal" data-title="<?php echo htmlspecialchars($noteTitle); ?>" data-content="<?php echo htmlspecialchars($noteContent); ?>" data-time="<?php echo $formattedDateTime; ?>">
                                 <div class="btn-group float-right">
                                     <a href="note_edit.php?edit=<?php echo $noteID ?>"><button type="button" class="btn btn-sm btn-light" title="Edit"><i class="fa fa-pencil"></i></button></a>
                                     <button onclick="delete_note('<?php echo $noteID ?>')" type="button" class="btn btn-sm btn-light" title="Delete"><i class="fa fa-trash"></i></button>
