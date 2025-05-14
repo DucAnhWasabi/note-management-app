@@ -33,23 +33,9 @@ if (isset($_POST['register'])) {
             $hashed_password = password_hash($password, PASSWORD_BCRYPT);
             // Generate activation token
             $activation_token = bin2hex(random_bytes(32));
-
-            try {
-                // Begin transaction
-                $conn->beginTransaction();
-
-                // Insert user into database
-                $stmt = $conn->prepare("INSERT INTO users (email, display_name, password, activation_token, is_activated) VALUES (?, ?, ?, ?, 0)");
-                $stmt->execute([$email, $display_name, $hashed_password, $activation_token]);
-                $user_id = $conn->lastInsertId();
-
-                // Insert default preferences into user_preferences
-                $stmt = $conn->prepare("INSERT INTO user_preferences (user_id, font_size, note_color, theme) VALUES (?, 'medium', 'bg-pastel-1', 'light')");
-                $stmt->execute([$user_id]);
-
-                // Commit transaction
-                $conn->commit();
-
+            // Insert user into database
+            $stmt = $conn->prepare("INSERT INTO users (email, display_name, password, activation_token, is_activated) VALUES (?, ?, ?, ?, 0)");
+            if ($stmt->execute([$email, $display_name, $hashed_password, $activation_token])) {
                 // Send activation email
                 $mail = new PHPMailer(true);
                 try {
@@ -76,17 +62,15 @@ if (isset($_POST['register'])) {
                     $mail->send();
                     // Automatically log in the user
                     $_SESSION['display_name'] = $display_name;
-                    $_SESSION['user_id'] = $user_id;
+                    $_SESSION['user_id'] = $conn->lastInsertId();
                     echo "<script>alert('Registration successful! Please check your email to activate your account.');</script>";
                     header('Location: http://localhost/take-note-app/');
                     exit();
                 } catch (Exception $e) {
                     echo "<script>alert('Registration successful, but failed to send activation email. Error: {$mail->ErrorInfo}');</script>";
                 }
-            } catch (PDOException $e) {
-                // Rollback transaction on error
-                $conn->rollBack();
-                echo "<script>alert('Registration failed: " . addslashes($e->getMessage()) . "');</script>";
+            } else {
+                echo "<script>alert('Registration failed. Please try again.');</script>";
             }
         }
     }
@@ -345,7 +329,11 @@ if (isset($_POST['login'])) {
                     <input type="password" name="password" placeholder="Password" required>
                     <i class='bx bxs-lock-alt'></i>
                 </div>
-                <button type="submit" name="login" class="btn">Login</button>
+                <button type="submit" name="login" class="btn">Login</button>   
+                <button type="button" onclick="window.location.href='forgot_password.php';" class="btn" style="margin-top: 10px; background-color: #f0f0f0; color: #333; box-shadow: none; border: 1px solid #ccc;">
+                    Forgot Password?
+                </button>
+
             </form>
         </div>
         <div class="form-box register">
