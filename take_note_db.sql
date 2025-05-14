@@ -22,10 +22,6 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table `users`
-INSERT INTO `users` (`user_id`, `email`, `display_name`, `password`, `activation_token`, `is_activated`, `created_at`) VALUES
-(1, 'welcome@example.com', 'Welcome User', '$2y$10$examplehashedpassword1234567890abcdef', NULL, 1, '2023-08-29 01:43:23');
-
 -- Table structure for table `tbl_notes`
 CREATE TABLE `tbl_notes` (
   `tbl_notes_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -37,9 +33,21 @@ CREATE TABLE `tbl_notes` (
   FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Dumping data for table `tbl_notes`
-INSERT INTO `tbl_notes` (`tbl_notes_id`, `user_id`, `note_title`, `note`, `date_time`) VALUES
-(1, 1, 'Welcome!!!', 'Start your first note here!!!', '2023-08-29 01:43:23');
+-- Table structure for table `user_preferences`
+CREATE TABLE `user_preferences` (
+  `preference_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `font_size` varchar(10) DEFAULT 'medium',
+  `note_color` varchar(20) DEFAULT 'bg-pastel-1',
+  `theme` varchar(10) DEFAULT 'light',
+  PRIMARY KEY (`preference_id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table `user_preferences`
+INSERT INTO `user_preferences` (`user_id`, `font_size`, `note_color`, `theme`) VALUES
+(1, 'medium', 'bg-pastel-1', 'light');
 
 -- AUTO_INCREMENT for table `users`
 ALTER TABLE `users`
@@ -48,6 +56,10 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `tbl_notes`
 ALTER TABLE `tbl_notes`
   MODIFY `tbl_notes_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+-- AUTO_INCREMENT for table `user_preferences`
+ALTER TABLE `user_preferences`
+  MODIFY `preference_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 COMMIT;
 
