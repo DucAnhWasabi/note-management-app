@@ -6,6 +6,21 @@ if (!isset($_SESSION['user_id'])) {
 }
 include('connection.php');
 
+// Lấy tùy chỉnh của người dùng
+$user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT * FROM user_preferences WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$preferences = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Nếu không có tùy chỉnh, sử dụng giá trị mặc định
+if (!$preferences) {
+    $preferences = [
+        'font_size' => 'medium',
+        'note_color' => 'bg-pastel-1',
+        'theme' => 'light'
+    ];
+}
+
 // Enable error logging
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
@@ -64,7 +79,7 @@ if (isset($_GET['saved'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Take-Note App</title>
+    <title>Edit Note - Take-Note App</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
@@ -73,6 +88,9 @@ if (isset($_GET['saved'])) {
 
         body {
             font-family: 'Patrick Hand', cursive;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#2c2c2c' : '#f4f6f9'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .main-panel, .card {
@@ -82,76 +100,115 @@ if (isset($_GET['saved'])) {
         }
 
         .card {
-            background-color: #ffffff;
-            border: 4px solid #a8e6cf !important;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#3a3a3a' : '#ffffff'; ?>;
+            border: 4px solid <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#a8e6cf'; ?> !important;
             border-radius: 20px !important;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,<?php echo $preferences['theme'] == 'dark' ? '0.3' : '0.1'; ?>);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+
         .card-header {
-            background-color: #dcedc1;
-            color: #33691e;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#4a4a4a' : '#dcedc1'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf' : '#33691e'; ?>;
             font-size: 24px;
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
             text-align: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         .card-body input[type="text"] {
-            background-color: #e0f7fa;
-            border: 2px dashed #a8e6cf;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#555555' : '#e0f7fa'; ?>;
+            border: 2px dashed <?php echo $preferences['theme'] == 'dark' ? '#777777' : '#a8e6cf'; ?>;
             border-radius: 10px;
-            font-size: 18px;
+            font-size: <?php echo $preferences['font_size'] == 'small' ? '14px' : ($preferences['font_size'] == 'large' ? '22px' : '18px'); ?>;
+            padding: 10px;
+            width: 100%;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
+
+        .card-body input[type="text"]:focus {
+            border-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
+            box-shadow: 0 0 5px rgba(<?php echo $preferences['theme'] == 'dark' ? '136, 204, 136' : '102, 187, 106'; ?>, 0.5);
+            outline: none;
+        }
+
         .card-body textarea {
-            background-image: linear-gradient(white 95%, #e0f7fa 5%);
+            background-image: linear-gradient(<?php echo $preferences['theme'] == 'dark' ? '#444 95%, #555555 5%' : 'white 95%, #e0f7fa 5%'; ?>);
             background-size: 100% 32px;
             line-height: 32px;
-            font-size: 16px;
-            border: 2px dashed #a8e6cf;
+            font-size: <?php echo $preferences['font_size'] == 'small' ? '12px' : ($preferences['font_size'] == 'large' ? '20px' : '16px'); ?>;
+            border: 2px dashed <?php echo $preferences['theme'] == 'dark' ? '#777777' : '#a8e6cf'; ?>;
             border-radius: 10px;
             resize: none;
             height: 400px;
             width: 100%;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .card-body textarea:focus {
+            color: <?php echo $preferences['theme'] == 'dark' ? '#e0e0e0' : '#333'; ?>;
+            border-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
+            box-shadow: 0 0 5px rgba(<?php echo $preferences['theme'] == 'dark' ? '136, 204, 136' : '102, 187, 106'; ?>, 0.5);
+            outline: none;
+        }
+
         .btn-danger {
-            background-color: #ef5350;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#d43f3a' : '#ef5350'; ?>;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             padding: 10px 20px;
-            transition: 0.3s;
+            transition: background-color 0.3s ease;
         }
+
         .btn-danger:hover {
-            background-color: #e53935;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#ef5350' : '#e53935'; ?>;
         }
+
         .save-status {
             font-size: 14px;
-            color: #33691e;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf' : '#33691e'; ?>;
             margin-top: 10px;
             display: none;
+            transition: color 0.3s ease;
         }
+
         .error-message {
-            color: red;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#ff6666' : 'red'; ?>;
             font-size: 14px;
             margin-top: 10px;
             display: none;
+            transition: color 0.3s ease;
         }
+
         .hidden-iframe {
             display: none;
         }
 
         .custom-navbar {
-            background-color: #a8e6cf;
-            background: linear-gradient(to right, #a8e6cf, #dcedc1);
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#444444' : '#a8e6cf'; ?>;
+            background: <?php echo $preferences['theme'] == 'dark' ? 'linear-gradient(to right, #444444, #555555)' : 'linear-gradient(to right, #a8e6cf, #dcedc1)'; ?>;
             border-radius: 122px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.155);
-        }
-        .navbar-brand {
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            transition: background 0.3s ease;
         }
 
-        /* Navbar Create Note Button */
+        .navbar-brand {
+            text-shadow: <?php echo $preferences['theme'] == 'dark' ? '1px 1px 2px rgba(0,0,0,0.5)' : '1px 1px 2px rgba(0,0,0,0.2)'; ?>;
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf !important' : '#2e7d32 !important'; ?>;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link {
+            color: <?php echo $preferences['theme'] == 'dark' ? '#a8e6cf !important' : '#33691e !important'; ?>;
+            transition: color 0.3s ease;
+        }
+
         .nav-item .btn-create-note {
-            background-color: #81c784;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#66bb6a' : '#81c784'; ?>;
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -161,13 +218,13 @@ if (isset($_GET['saved'])) {
         }
 
         .nav-item .btn-create-note:hover {
-            background-color: #66bb6a;
+            background-color: <?php echo $preferences['theme'] == 'dark' ? '#88cc88' : '#66bb6a'; ?>;
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light custom-navbar shadow-sm rounded mx-3 my-3 px-4">
-        <a class="navbar-brand font-weight-bold" href="#" style="font-size: 28px; color: #2e7d32;">
+        <a class="navbar-brand font-weight-bold" href="#" style="font-size: 28px;">
             🍀 Take-Note App
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -176,14 +233,13 @@ if (isset($_GET['saved'])) {
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
-                
                 <li class="nav-item dropdown ml-2">
                     <a class="nav-link dropdown-toggle font-weight-bold" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false" style="color: #33691e;">
-                      <?php echo htmlspecialchars($_SESSION['display_name']); ?>
+                    aria-haspopup="true" aria-expanded="false">
+                        <?php echo htmlspecialchars($_SESSION['display_name']); ?>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">View Account</a>
+                        <a class="dropdown-item" href="user_preferences.php">Preferences</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="logout.php">Log Out</a>
                     </div>
@@ -221,7 +277,7 @@ if (isset($_GET['saved'])) {
                             <input type="hidden" name="note_id" value="<?php echo $note_id; ?>">
                             <div class="form-group">
                                 <label for="noteTitle">Title</label>
-                                <input type="text" class="form-control" id="noteTitle" value="<?php echo htmlspecialchars($note_title); ?>" readonly>
+                                <input type="text" class="form-control" id="noteTitle" name="note_title" value="<?php echo htmlspecialchars($note_title); ?>" required>
                             </div>
                             <div class="form-group">
                                 <label for="noteContent">Content</label>
@@ -243,20 +299,29 @@ if (isset($_GET['saved'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function() {
+            const titleInput = $('#noteTitle');
             const textarea = $('#noteContent');
             const saveStatus = $('#saveStatus');
             const form = $('#noteForm');
+            let lastTitle = titleInput.val();
             let lastContent = textarea.val();
 
             // Debounce function to handle auto-save
             const debouncedSave = _.debounce(function() {
+                const title = titleInput.val();
                 const content = textarea.val();
-                if (content === lastContent) return;
+                if (title === lastTitle && content === lastContent) return;
 
-                saveStatus.text('Saving...');
-                form.submit(); // Submit the form to the hidden iframe
+                console.log("Submitting form with title:", title, "and content:", content); // Debug log
+                saveStatus.text('Saving...').css('display', 'block');
+                form.submit();
+                lastTitle = title;
                 lastContent = content;
-            }, 1000); // Delay of 1 second
+            }, 1000);
+
+            titleInput.on('input', function() {
+                debouncedSave();
+            });
 
             textarea.on('input', function() {
                 debouncedSave();
@@ -264,10 +329,11 @@ if (isset($_GET['saved'])) {
 
             // Listen for messages from the iframe
             window.addEventListener('message', function(e) {
+                console.log("Received message from iframe:", e.data); // Debug log
                 if (e.data.status === 'success') {
-                    saveStatus.text('Saved successfully');
+                    saveStatus.text('Saved successfully').css('color', '<?php echo $preferences['theme'] == 'dark' ? '#a8e6cf' : '#33691e'; ?>').fadeIn(500).delay(2000).fadeOut(500);
                 } else if (e.data.status === 'error') {
-                    saveStatus.text('Error saving: ' + e.data.message).css('color', 'red').fadeIn(500).delay(2000).fadeOut(500);
+                    saveStatus.text('Error saving: ' + e.data.message).css('color', '<?php echo $preferences['theme'] == 'dark' ? '#ff6666' : 'red'; ?>').fadeIn(500).delay(2000).fadeOut(500);
                 }
             });
         });
